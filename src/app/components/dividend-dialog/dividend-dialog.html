@@ -1,0 +1,47 @@
+<h2 mat-dialog-title>{{ data.dividend ? 'Edit Dividend' : 'Add Dividend' }}</h2>
+<mat-dialog-content [formGroup]="dividendForm">
+  <mat-form-field appearance="fill">
+    <mat-label>Stock</mat-label>
+    <mat-select formControlName="stock">
+      <mat-option *ngFor="let stock of stocks" [value]="stock.ticker">
+        {{stock.name}}
+      </mat-option>
+    </mat-select>
+    <mat-error *ngIf="dividendForm.controls['stock'].hasError('required')">Stock is required</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Dividend Date</mat-label>
+    <input matInput [matDatepicker]="picker" formControlName="dividendDate">
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+    <mat-error *ngIf="dividendForm.controls['dividendDate'].hasError('required')">Dividend Date is required</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Units</mat-label>
+    <input matInput type="number" formControlName="units">
+    <mat-error *ngIf="dividendForm.controls['units'].hasError('required')">Units is required</mat-error>
+    <mat-error *ngIf="dividendForm.controls['units'].hasError('min')">Units must be at least 1</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Dividend Per Share</mat-label>
+    <input matInput type="number" formControlName="dividendPerShare">
+    <mat-error *ngIf="dividendForm.controls['dividendPerShare'].hasError('required')">Dividend Per Share is required</mat-error>
+    <mat-error *ngIf="dividendForm.controls['dividendPerShare'].hasError('min')">Dividend Per Share must be at least 0</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Currency</mat-label>
+    <mat-select formControlName="currency">
+      <mat-option value="MYR">MYR</mat-option>
+      <mat-option value="USD">USD</mat-option>
+    </mat-select>
+    <mat-error *ngIf="dividendForm.controls['currency'].hasError('required')">Currency is required</mat-error>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="dividendForm.invalid">Save</button>
+</mat-dialog-actions>
