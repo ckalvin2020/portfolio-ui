@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>{{ data.interest ? 'Edit Interest' : 'Add Interest' }}</h2>
+<mat-dialog-content [formGroup]="interestForm">
+  <mat-form-field appearance="fill">
+    <mat-label>Interest Date</mat-label>
+    <input matInput [matDatepicker]="picker" formControlName="interestDate">
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+    <mat-error *ngIf="interestForm.controls['interestDate'].hasError('required')">Interest Date is required</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Interest Amount</mat-label>
+    <input matInput type="number" formControlName="interestAmount">
+    <mat-error *ngIf="interestForm.controls['interestAmount'].hasError('required')">Interest Amount is required</mat-error>
+    <mat-error *ngIf="interestForm.controls['interestAmount'].hasError('min')">Interest Amount must be at least 0</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Broker</mat-label>
+    <mat-select formControlName="broker">
+      <mat-option *ngFor="let broker of brokers" [value]="broker">
+        {{broker}}
+      </mat-option>
+    </mat-select>
+    <mat-error *ngIf="interestForm.controls['broker'].hasError('required')">Broker is required</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Currency</mat-label>
+    <mat-select formControlName="currency">
+      <mat-option *ngFor="let currency of currencies" [value]="currency">
+        {{currency}}
+      </mat-option>
+    </mat-select>
+    <mat-error *ngIf="interestForm.controls['currency'].hasError('required')">Currency is required</mat-error>
+  </mat-form-field>
+
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="interestForm.invalid">Save</button>
+</mat-dialog-actions>

@@ -1,4 +1,17 @@
 <div class="mat-elevation-z8">
+  <div style="display: flex; justify-content: space-between; padding: 16px;">
+    <mat-form-field appearance="fill">
+      <mat-label>Filter by Stock</mat-label>
+      <mat-select [(ngModel)]="selectedStockTicker" (selectionChange)="applyStockFilter()">
+        <mat-option value="all">All Stocks</mat-option>
+        <mat-option *ngFor="let stock of stocks" [value]="stock.ticker">
+          {{stock.name}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <button mat-raised-button color="primary" (click)="openDialog()">Add Transaction</button>
+  </div>
+
   <table mat-table [dataSource]="dataSource" matSort>
 
     <!-- Transaction Date Column -->
@@ -19,22 +32,41 @@
       <td mat-cell *matCellDef="let row"> {{row.transactionType}} </td>
     </ng-container>
 
-    <!-- Units Column -->
-    <ng-container matColumnDef="units">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> Units </th>
-      <td mat-cell *matCellDef="let row"> {{row.units}} </td>
-    </ng-container>
-
     <!-- Price Column -->
     <ng-container matColumnDef="price">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Price </th>
       <td mat-cell *matCellDef="let row"> {{row.price | currency:row.currency}} </td>
     </ng-container>
 
+    <!-- Units Column -->
+    <ng-container matColumnDef="units">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Units </th>
+      <td mat-cell *matCellDef="let row"> {{row.units}} </td>
+    </ng-container>
+
     <!-- Currency Column -->
     <ng-container matColumnDef="currency">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Currency </th>
       <td mat-cell *matCellDef="let row"> {{row.currency}} </td>
+    </ng-container>
+
+    <!-- Cost Column -->
+    <ng-container matColumnDef="cost">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Cost </th>
+      <td mat-cell *matCellDef="let row"> {{row.cost | currency:row.currency}} </td>
+    </ng-container>
+
+    <!-- Actions Column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef> Actions </th>
+      <td mat-cell *matCellDef="let row">
+        <button mat-icon-button color="primary" (click)="openDialog(row)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="deleteTransaction(row.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
