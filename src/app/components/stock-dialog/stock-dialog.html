@@ -1,0 +1,29 @@
+
+<h2 mat-dialog-title>{{ data.stock ? 'Edit Stock' : 'Add Stock' }}</h2>
+<mat-dialog-content [formGroup]="stockForm">
+  <mat-form-field appearance="fill">
+    <mat-label>Ticker</mat-label>
+    <input matInput formControlName="ticker">
+    <mat-error *ngIf="stockForm.controls['ticker'].hasError('required')">Ticker is required</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Name</mat-label>
+    <input matInput formControlName="name">
+    <mat-error *ngIf="stockForm.controls['name'].hasError('required')">Name is required</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Base Currency</mat-label>
+    <mat-select formControlName="baseCurrency">
+      <mat-option *ngFor="let currency of currencies" [value]="currency">
+        {{currency}}
+      </mat-option>
+    </mat-select>
+    <mat-error *ngIf="stockForm.controls['baseCurrency'].hasError('required')">Base Currency is required</mat-error>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="stockForm.invalid">Save</button>
+</mat-dialog-actions>
