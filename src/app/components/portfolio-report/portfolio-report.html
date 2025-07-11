@@ -34,7 +34,7 @@
         </mat-form-field>
       </div>
 
-      <mat-card *ngIf="totalPortfolioPerformance" class="total-performance-card">
+      <mat-card *ngIf="totalPortfolioPerformance && overallPerformance" class="total-performance-card">
         <mat-card-header>
           <mat-card-title>Total Portfolio Performance</mat-card-title>
         </mat-card-header>
@@ -63,48 +63,22 @@
             <span>Total Interest:</span>
             <span>{{ totalPortfolioPerformance.totalInterest | currency:selectedCurrency:'symbol':'1.2-2' }}</span>
           </div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card *ngIf="overallPerformance" class="total-performance-card">
-        <mat-card-header>
-          <mat-card-title>Overall Performance</mat-card-title>
-        </mat-card-header>
-        <mat-card-content class="performance-metrics">
           <div class="metric">
-            <span>Opening Value:</span>
-            <span>{{ overallPerformance.openingValue | currency:selectedCurrency:'symbol':'1.2-2' }}</span>
+            <span>Average P/E:</span>
+            <span>{{ totalPortfolioPerformance.averagePe | number:'1.2-2' }}</span>
           </div>
           <div class="metric">
-            <span>Closing Value:</span>
-            <span>{{ overallPerformance.closingValue | currency:selectedCurrency:'symbol':'1.2-2' }}</span>
+            <span>Average Div Yield:</span>
+            <span>{{ totalPortfolioPerformance.averageDivYield | number:'1.2-2' }}%</span>
           </div>
           <div class="metric">
-            <span>Gross Profit:</span>
-            <span>{{ overallPerformance.grossProfit | currency:selectedCurrency:'symbol':'1.2-2' }}</span>
-          </div>
-          <div class="metric">
-            <span>Net Profit:</span>
-            <span>{{ overallPerformance.netProfit | currency:selectedCurrency:'symbol':'1.2-2' }}</span>
-          </div>
-          <div class="metric">
-            <span>Dividends:</span>
-            <span>{{ overallPerformance.dividends | currency:selectedCurrency:'symbol':'1.2-2' }}</span>
-          </div>
-          <div class="metric">
-            <span>Interest:</span>
-            <span>{{ overallPerformance.interest | currency:selectedCurrency:'symbol':'1.2-2' }}</span>
-          </div>
-          <div class="metric">
-            <span>Net Cash Flow:</span>
-            <span>{{ overallPerformance.netCashFlow | currency:selectedCurrency:'symbol':'1.2-2' }}</span>
-          </div>
-          <div class="metric">
-            <span>XIRR:</span>
+            <span>Overall XIRR:</span>
             <span>{{ overallPerformance.overallXirr | number:'1.2-2' }}%</span>
           </div>
         </mat-card-content>
       </mat-card>
+
+      
 
       <mat-expansion-panel expanded="true">
         <mat-expansion-panel-header>
@@ -173,12 +147,12 @@
             Stock Performance Details Table
           </mat-panel-title>
         </mat-expansion-panel-header>
-        <table mat-table [dataSource]="stockPerformanceDataSource" class="mat-elevation-z8">
+        <table mat-table [dataSource]="stockPerformanceDataSource" multiTemplateDataRows class="mat-elevation-z8">
 
-          <!-- Ticker Column -->
-          <ng-container matColumnDef="ticker">
-            <th mat-header-cell *matHeaderCellDef> Ticker </th>
-            <td mat-cell *matCellDef="let element"> {{element.ticker}} </td>
+          <!-- Name Column -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef> Name </th>
+            <td mat-cell *matCellDef="let element"> {{element.name}} </td>
           </ng-container>
 
           <!-- Current Value Column -->
@@ -211,8 +185,35 @@
             <td mat-cell *matCellDef="let element"> {{element.totalDividends | currency:selectedCurrency:'symbol':'1.2-2'}} </td>
           </ng-container>
 
+          <!-- PE Ratio Column -->
+          <ng-container matColumnDef="peRatio">
+            <th mat-header-cell *matHeaderCellDef> P/E Ratio </th>
+            <td mat-cell *matCellDef="let element"> {{element.peRatio | number:'1.2-2'}} </td>
+          </ng-container>
+
+          <!-- Div Yield Column -->
+          <ng-container matColumnDef="divYield">
+            <th mat-header-cell *matHeaderCellDef> Div Yield </th>
+            <td mat-cell *matCellDef="let element"> {{element.divYield | number:'1.2-2'}}% </td>
+          </ng-container>
+
           <tr mat-header-row *matHeaderRowDef="stockPerformanceDisplayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: stockPerformanceDisplayedColumns;"></tr>
+          <tr mat-row *matRowDef="let element; columns: stockPerformanceDisplayedColumns;" class="example-element-row" (click)="toggleRow(element)">
+          </tr>
+
+          <!-- Expanded Content Column - The detail row is made to fill the whole table -->
+          <ng-container matColumnDef="expandedDetail">
+            <td mat-cell *matCellDef="let element" [attr.colspan]="stockPerformanceDisplayedColumns.length">
+              <div class="example-element-detail" [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+                <div class="element-description">
+                  <p><strong>Stock Name:</strong> {{ element.name }}</p>
+                  <p><strong>P/E Ratio:</strong> {{ element.peRatio | number:'1.2-2' }}</p>
+                  <p><strong>Dividend Yield:</strong> {{ element.divYield | number:'1.2-2' }}%</p>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+          <tr mat-row *matRowDef="let row; columns: ['expandedDetail']; when: isExpansionDetailRow" class="example-detail-row"></tr>
         </table>
       </mat-expansion-panel>
             </mat-card-content>

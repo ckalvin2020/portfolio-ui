@@ -3,5 +3,5 @@ export interface DailyPerformance {
     marketValue: number;
     totalCosts: number;
     profit: number;
-    profitPerPerDay: number;
+    profitPerDay: number;
 }

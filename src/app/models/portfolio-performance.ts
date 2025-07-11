@@ -9,4 +9,6 @@ export interface PortfolioPerformance {
     totalDividends: number;
     totalInterest: number;
     stockPerformances: { [key: string]: StockProfitLoss };
+    averagePe?: number;
+    averageDivYield?: number;
 }

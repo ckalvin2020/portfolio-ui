@@ -13,6 +13,7 @@ import { AnnualPerformance } from '../../models/annual-performance';
 import { OverallPerformance } from '../../models/overall-performance';
 import { YearlyPerformance } from '../../models/yearly-performance';
 import { DailyPerformance } from '../../models/daily-performance';
+import { StockProfitLoss } from '../../models/stock-profit-loss';
 
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,6 +22,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
   selector: 'app-portfolio-report',
@@ -37,7 +39,14 @@ import { MatTableModule } from '@angular/material/table';
     MatExpansionModule,
     MatButtonModule,
     MatTableModule
-  ]
+  ],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed,void', style({ height: '0px', minHeight: '0' })),
+      state('expanded', style({ height: '*', minHeight: '48px' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
 })
 export class PortfolioReportComponent implements OnInit {
 
@@ -125,8 +134,9 @@ export class PortfolioReportComponent implements OnInit {
       { data: [], label: 'Total Dividends' }
     ]
   };
-  stockPerformanceDataSource: any[] = [];
-  stockPerformanceDisplayedColumns: string[] = ['ticker', 'currentValue', 'totalCost', 'grossProfit', 'netProfit', 'totalDividends'];
+  stockPerformanceDataSource: StockProfitLoss[] = [];
+  stockPerformanceDisplayedColumns: string[] = ['name', 'currentValue', 'totalCost', 'grossProfit', 'netProfit', 'totalDividends', 'peRatio', 'divYield'];
+  expandedElement: StockProfitLoss | null = null;
 
   // Yearly Performance Bar Chart
   public yearlyBarChartOptions: ChartConfiguration['options'] = {
@@ -208,14 +218,33 @@ export class PortfolioReportComponent implements OnInit {
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
-            const label = context.dataset.label || '';
-            const value = context.parsed.y;
-            const formattedValue = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'MYR' }).format(value);
-            return `${label}: ${formattedValue}`;
-          },
           title: function(context) {
             return context[0].label; // Display the date as the title
+          },
+          label: function(context) {
+            // This callback is called for each dataset item in the tooltip.
+            // We want to aggregate all dataset values for the current point.
+            // So, we'll return an empty string here and use afterBody.
+            return '';
+          },
+          afterBody: function(tooltipItems) {
+            const chart = tooltipItems[0].chart;
+            const dataIndex = tooltipItems[0].dataIndex;
+            const body: string[] = [];
+
+            chart.data.datasets.forEach((dataset) => {
+              const label = dataset.label || '';
+              const value = dataset.data[dataIndex];
+              let formattedValue = '';
+
+              if (typeof value === 'number') {
+                formattedValue = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'MYR' }).format(value);
+              } else {
+                formattedValue = String(value);
+              }
+              body.push(`${label}: ${formattedValue}`);
+            });
+            return body;
           }
         }
       }
@@ -310,18 +339,24 @@ export class PortfolioReportComponent implements OnInit {
   }
 
   updateBarChart(data: PortfolioPerformance): void {
-    const stockData: { ticker: string, currentValue: number, grossProfit: number, netProfit: number, totalDividends: number, totalCost: number }[] = [];
+    const stockData: StockProfitLoss[] = [];
 
-    for (const ticker in data.stockPerformances) {
-      const performance = data.stockPerformances[ticker];
-      stockData.push({
-        ticker: ticker,
-        currentValue: performance.currentValue,
-        grossProfit: performance.grossProfit,
-        netProfit: performance.netProfit,
-        totalDividends: performance.totalDividends,
-        totalCost: performance.totalCost
-      });
+    for (const stockName in data.stockPerformances) {
+      const performance = data.stockPerformances[stockName];
+      if (performance.currentValue > 0) { // Filter for currentValue > 0
+        stockData.push({
+          name: stockName,
+          totalUnits: performance.totalUnits,
+          totalCost: performance.totalCost,
+          currentValue: performance.currentValue,
+          grossProfit: performance.grossProfit,
+          netProfit: performance.netProfit,
+          totalDividends: performance.totalDividends,
+          averageCost: performance.averageCost,
+          peRatio: performance.peRatio,
+          divYield: performance.divYield
+        });
+      }
     }
 
     // Sort the stock data
@@ -340,7 +375,7 @@ export class PortfolioReportComponent implements OnInit {
 
     this.stockPerformanceDataSource = stockData;
 
-    const labels = stockData.map(s => s.ticker);
+    const labels = stockData.map(s => s.name);
     const currentValueData = stockData.map(s => s.currentValue);
     const grossProfitData = stockData.map(s => s.grossProfit);
     const netProfitData = stockData.map(s => s.netProfit);
@@ -387,6 +422,7 @@ export class PortfolioReportComponent implements OnInit {
     const marketValueData = data.map(d => d.marketValue);
     const totalCostsData = data.map(d => d.totalCosts);
     const profitData = data.map(d => d.profit);
+    const profitPerDayData = data.map(d => d.profitPerDay);
 
     this.lineChartData = {
       labels: [...labels],
@@ -411,6 +447,13 @@ export class PortfolioReportComponent implements OnInit {
           borderColor: 'green',
           backgroundColor: 'rgba(0,255,0,0.3)',
           fill: 'origin',
+        },
+        {
+          data: [...profitPerDayData],
+          label: 'Profit Per Day',
+          borderColor: 'purple',
+          backgroundColor: 'rgba(128,0,128,0.3)',
+          fill: 'origin',
         }
       ]
     };
@@ -423,5 +466,11 @@ export class PortfolioReportComponent implements OnInit {
       .subscribe((data: DailyPerformance[]) => {
         this.updateLineChart(data);
       });
+  }
+
+  isExpansionDetailRow = (i: number, row: Object) => row.hasOwnProperty('detailRow');
+
+  toggleRow(element: StockProfitLoss) {
+    this.expandedElement = this.expandedElement === element ? null : element;
   }
 }
