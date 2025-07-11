@@ -1,0 +1,39 @@
+.charts-container {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.chart-card {
+  flex: 1 1 calc(50% - 8px);
+  min-width: 300px;
+  max-width: 500px;
+}
+
+.chart-card-full-width {
+  flex: 1 1 100%;
+}
+
+.total-performance-card {
+  margin-bottom: 16px;
+}
+
+.performance-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+
+  .metric {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: #f5f5f5;
+  }
+}
+
+.bar-chart-container {
+  max-height: 600px;
+  overflow: auto;
+}
